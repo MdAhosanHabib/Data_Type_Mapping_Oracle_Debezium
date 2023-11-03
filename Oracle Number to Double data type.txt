@@ -1,0 +1,43 @@
+###Numeric/Number Data Type Mapping for Oracle to Kafka with Debezium 2.4 Connector###
+https://debezium.io/documentation/reference/2.4/connectors/oracle.html
+For Oracle's number data type not DEFAULT mapping in debezium to double/string. it is detect as byte, 
+which is not idle for decimal number. so we use "decimal.handling.mode": "string" this parameter in 
+debezium config.
+
+--check it
+curl -X GET http://10.0.10.10:8083/connectors/inventory-connector
+
+--delete by it
+curl -X DELETE http://10.0.10.10:8083/connectors/inventory-connector
+
+--register the config of oracle
+vi /u01/DataStream/connector-config.json
+
+{
+    "name": "inventory-connector",
+    "config": {
+        "connector.class" : "io.debezium.connector.oracle.OracleConnector",
+        "tasks.max" : "1",
+        "topic.prefix" : "test1",
+        "database.hostname" : "10.0.10.10",
+        "database.port" : "1521",
+        "database.user" : "debezium",
+        "database.password" : "debezium56",
+        "database.dbname" : "mwdb",
+        "bootstrap.servers" : "10.0.10.10:9092",
+        "schema.history.internal.kafka.bootstrap.servers" : "10.0.10.10:9092",
+        "schema.history.internal.kafka.topic": "test",
+        "table.include.list": "ahosan.TEST_DATA",
+        "decimal.handling.mode": "string"
+    }
+}
+
+--also use "decimal.handling.mode": "double" as per your Requirment
+
+--send it
+cd /u01/DataStream/
+curl -X POST -H "Content-Type: application/json" --data @connector-config.json http://10.0.10.10:8083/connectors
+
+--check it
+curl -X GET http://10.0.10.10:8083/connectors/inventory-connector
+
